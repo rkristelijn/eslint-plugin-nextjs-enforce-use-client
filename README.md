@@ -18,7 +18,7 @@ Install the plugin via npm:
 1.	Import the plugin in your eslint.config.cjs file:
 
 ```js
-const enforceRuntimeEdgeRule = require('eslint-plugin-nextjs-enforce-runtime-edge');
+const enforceRuntimeEdgeRule = require('eslint-plugin-nextjs-enforce-use-client');
 ```
 
 
@@ -27,15 +27,15 @@ const enforceRuntimeEdgeRule = require('eslint-plugin-nextjs-enforce-runtime-edg
 module.exports = [
   // Other rules or base configurations...
 
-  // Enforce "runtime = 'edge';" in src/app files
+  // Enforce "'use client';" in files that use react stuff and need use client
   {
     files: ['src/app/**/*.ts', 'src/app/**/*.tsx'],
     ignores: ['src/app/**/*.test.ts', 'src/app/**/*.test.tsx'],
     plugins: {
-      'eslint-plugin-nextjs-enforce-runtime-edge': enforceRuntimeEdgeRule,
+      'eslint-plugin-nextjs-enforce-use-client': enforceRuntimeEdgeRule,
     },
     rules: {
-      'nextjs-enforce-runtime-edge/enforce-runtime-edge': 'error',
+      'nextjs-enforce-use-client/enforce-use-client': 'error',
     },
   },
 
@@ -50,7 +50,7 @@ If you’re using an .mjs setup for your ESLint configuration:
 1.	Import the plugin dynamically:
 
 ```ts
-import enforceRuntimeEdgeRule from 'eslint-plugin-nextjs-enforce-runtime-edge';
+import enforceRuntimeEdgeRule from 'eslint-plugin-nextjs-enforce-use-client';
 ```
 
 2.	Add the configuration to your ESLint rules:
@@ -64,10 +64,10 @@ export default [
     files: ['src/app/**/*.ts', 'src/app/**/*.tsx'],
     ignores: ['src/app/**/*.test.ts', 'src/app/**/*.test.tsx'],
     plugins: {
-      'eslint-plugin-nextjs-enforce-runtime-edge': enforceRuntimeEdgeRule,
+      'eslint-plugin-nextjs-enforce-use-client': enforceRuntimeEdgeRule,
     },
     rules: {
-      'nextjs-enforce-runtime-edge/enforce-runtime-edge': 'error',
+      'nextjs-enforce-use-client/enforce-use-client': 'error',
     },
   },
 
@@ -91,7 +91,7 @@ When used with the --fix flag, the plugin automatically adds:
 at the appropriate location in the file if it’s missing.
 
 Rule Details
-- Rule name: nextjs-enforce-runtime-edge/enforce-runtime-edge
+- Rule name: nextjs-enforce-use-client/enforce-use-client
 - Fixable: Yes, it can automatically add the missing export.
 
 ## Contribution
