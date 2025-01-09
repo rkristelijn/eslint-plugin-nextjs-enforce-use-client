@@ -1,0 +1,37 @@
+{
+  "name": "eslint-plugin-nextjs-enforce-use-client",
+  "description": "ESLint plugin to enforce use client for nextjs projects",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "npx jest"
+  },
+  "keywords": [
+    "eslint",
+    "nextjs",
+    "next.js",
+    "react",
+    "use-client",
+    "next",
+    "enforce",
+    "autofix"
+  ],
+  "main": "index.js",
+  "eslintConfig": {
+    "extends": [
+      "plugin:enforce-runtime-edge/recommended"
+    ]
+  },
+  "author": "Remi Kristelijn",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/rkristelijn/eslint-plugin-nextjs-enforce-use-client"
+  },
+  "peerDependencies": {
+    "eslint": "^9.17.0"
+  },
+  "devDependencies": {
+    "esbuild-jest": "^0.5.0",
+    "eslint-rule-tester": "^2.0.0"
+  }
+}
