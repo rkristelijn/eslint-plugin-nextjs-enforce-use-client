@@ -7,16 +7,19 @@
  * @example
  * ```js
  * // .eslintrc.js
+ * 
+ * const enforceUseClient = require('eslint-plugin-nextjs-enforce-use-client');
+ * 
  * module.exports = [
  *  {
  *    files: ['**\/*.tsx', '**\/*.jsx'], // remove the backspace, it is only here to let jsDoc work
  *    ignores: ['**\/*.test.ts', '**\/*.test.tsx'], // remove the backspace, it is only here to let jsDoc work
- *    plugins: ['nextjs-enforce-use-client'],
+ *    plugins: { 'eslint-plugin-nextjs-enforce-use-client': enforceUseClient,},
  *    rules: {
- *     'nextjs-enforce-use-client/enforce-use-client-react': 'error',
- *     'nextjs-enforce-use-client/enforce-use-client-mui': 'error',
- *     'nextjs-enforce-use-client/enforce-use-client-react-number-format': 'error',
- *     'nextjs-enforce-use-client/no-flupke': 'error',
+ *     'eslint-plugin-nextjs-enforce-use-client/enforce-use-client-react': 'error',
+ *     'eslint-plugin-nextjs-enforce-use-client/enforce-use-client-mui': 'error',
+ *     'eslint-plugin-nextjs-enforce-use-client/enforce-use-client-react-number-format': 'error',
+ *     'eslint-plugin-nextjs-enforce-use-client/no-flupke': 'error',
  *     },
  *   },
  * ],
