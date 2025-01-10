@@ -18,7 +18,7 @@ Install the plugin via npm:
 1.	Import the plugin in your eslint.config.cjs file:
 
 ```js
-const enforceRuntimeEdgeRule = require('eslint-plugin-nextjs-enforce-use-client');
+const enforceUseClient = require('eslint-plugin-nextjs-enforce-use-client');
 ```
 
 
@@ -32,7 +32,7 @@ module.exports = [
     files: ['src/app/**/*.ts', 'src/app/**/*.tsx'],
     ignores: ['src/app/**/*.test.ts', 'src/app/**/*.test.tsx'],
     plugins: {
-      'eslint-plugin-nextjs-enforce-use-client': enforceRuntimeEdgeRule,
+      'eslint-plugin-nextjs-enforce-use-client': enforceUseClient,
     },
     rules: {
       'nextjs-enforce-use-client/enforce-use-client': 'error',
@@ -50,7 +50,7 @@ If you’re using an .mjs setup for your ESLint configuration:
 1.	Import the plugin dynamically:
 
 ```ts
-import enforceRuntimeEdgeRule from 'eslint-plugin-nextjs-enforce-use-client';
+import enforceUseClient from 'eslint-plugin-nextjs-enforce-use-client';
 ```
 
 2.	Add the configuration to your ESLint rules:
@@ -59,12 +59,12 @@ import enforceRuntimeEdgeRule from 'eslint-plugin-nextjs-enforce-use-client';
 export default [
   // Other rules or base configurations...
 
-  // Enforce "runtime = 'edge';" in src/app files
+  // Enforce "'use client';" in files that use react stuff and need use client
   {
     files: ['src/app/**/*.ts', 'src/app/**/*.tsx'],
     ignores: ['src/app/**/*.test.ts', 'src/app/**/*.test.tsx'],
     plugins: {
-      'eslint-plugin-nextjs-enforce-use-client': enforceRuntimeEdgeRule,
+      'eslint-plugin-nextjs-enforce-use-client': enforceRuntienforceUseClientmeEdgeRule,
     },
     rules: {
       'nextjs-enforce-use-client/enforce-use-client': 'error',
