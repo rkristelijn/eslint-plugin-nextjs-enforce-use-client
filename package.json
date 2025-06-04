@@ -31,7 +31,10 @@
     "eslint": "^9.17.0"
   },
   "devDependencies": {
+    "@typescript-eslint/rule-tester": "^8.33.1",
     "esbuild-jest": "^0.5.0",
-    "eslint-rule-tester": "^2.0.0"
+    "eslint": "^9.28.0",
+    "eslint-rule-tester": "^2.0.0",
+    "jest": "^29.7.0"
   }
 }
