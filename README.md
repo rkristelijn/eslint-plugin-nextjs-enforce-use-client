@@ -1,4 +1,9 @@
-# ESLint Plugin for Next.js to Enforce Use Client
+# eslint-plugin-nextjs-enforce-use-client
+
+![CI](https://github.com/rkristelijn/eslint-plugin-nextjs-enforce-use-client/actions/workflows/test.yml/badge.svg)
+[![npm version](https://img.shields.io/npm/v/eslint-plugin-nextjs-enforce-use-client)](https://www.npmjs.com/package/eslint-plugin-nextjs-enforce-use-client)
+[![npm downloads](https://img.shields.io/npm/dm/eslint-plugin-nextjs-enforce-use-client)](https://www.npmjs.com/package/eslint-plugin-nextjs-enforce-use-client)
+![license](https://img.shields.io/badge/license-MIT-green)
 
 This ESLint plugin enforces the inclusion of `'use client';` for whenever there are things used that need it.
 
