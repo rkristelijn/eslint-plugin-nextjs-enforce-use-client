@@ -49,6 +49,29 @@ The rules now follow the React and Next.js server/client boundary rules (ADR-003
 4. Run `npx eslint --fix .` and review the diff. Reports without a fix name the server-only export that blocks the
    directive.
 
+#### What the new reports mean
+
+| Report                                | Meaning                                                                                                                                                       | What to do                                                                                                                                                                      |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enforce-use-client-*` with a fix     | A Server Component entry file uses a client-only API                                                                                                          | Accept the fix, or move the interactive part into its own `'use client'` component and keep the page on the server                                                              |
+| `cannotAddUseClient` (no fix)         | The file needs `'use client'`, but it also exports `metadata`, `generateMetadata`, `generateStaticParams` or `dynamic`, which only work in a Server Component | Keep the file a Server Component and move the client part into its own component; the server-only export stays where it is                                                      |
+| `no-metadata-in-client`: `buildError` | `metadata`, `generateMetadata` or `generateStaticParams` in a `'use client'` page or layout: the build fails                                                  | Same as above: split the client part out, or remove the export                                                                                                                  |
+| `no-metadata-in-client`: `ignored`    | `dynamic` in a `'use client'` page or layout has no effect. A page with `force-dynamic` builds as static                                                      | Either remove the export (if the route is dynamic for another reason, e.g. a server layout sets `dynamic`), or make the page a Server Component again so `dynamic` takes effect |
+| `require-use-client-in-error`         | `error` / `global-error` without `'use client'`                                                                                                               | Accept the fix                                                                                                                                                                  |
+
+#### Reports that disappear
+
+- **Component, hook and helper files** (`Counter.tsx`, `useCart.ts`): they are not a server/client boundary. When they
+  are imported from a client module they are client code already. Use `{ files: 'all' }` if you want them checked.
+- **MUI components** (`ThemeProvider`, `CssBaseline`, `AppRouterCacheProvider`): they ship `'use client'` themselves.
+- **`useId`**: it works in Server Components.
+
+#### Directives added by 1.x
+
+1.x could add `'use client'` to a layout only because it imported MUI components. That layout cannot export `metadata`.
+If it uses no client-only API (v2 reports nothing after you remove the directive), you can remove the directive and add
+`metadata` again. Check this per file: v2 does not remove directives for you.
+
 ## 1.2.0 and earlier
 
 See the git history.
