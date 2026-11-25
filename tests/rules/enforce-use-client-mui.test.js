@@ -13,6 +13,8 @@ const err = (api) => ({ messageId: 'missingUseClient', data: { api } });
 
 createRuleTester().run('enforce-use-client-mui', rule, {
   valid: [
+    // a path import that is a component, not a hook
+    { code: "import Button from '@mui/material/Button';", filename: LAYOUT },
     // MUI's own App Router setup: components in a server layout are fine (they ship 'use client')
     {
       code: "import { AppRouterCacheProvider } from '@mui/material-nextjs/v15-appRouter';\nimport { ThemeProvider } from '@mui/material/styles';\nimport { CssBaseline, Box } from '@mui/material';\nimport theme from './theme';\nexport const metadata = { title: 'x' };\nexport default ({ children }) => <AppRouterCacheProvider><ThemeProvider theme={theme}><CssBaseline />{children}</ThemeProvider></AppRouterCacheProvider>;",
@@ -24,6 +26,20 @@ createRuleTester().run('enforce-use-client-mui', rule, {
     { code: "import { useMediaQuery } from 'other-lib';", filename: LAYOUT },
   ],
   invalid: [
+    {
+      name: 'default import of an MUI hook by path, called directly',
+      code: "import useMediaQuery from '@mui/material/useMediaQuery';\nexport default () => useMediaQuery('(min-width:600px)');",
+      filename: LAYOUT,
+      output:
+        "'use client';\n\nimport useMediaQuery from '@mui/material/useMediaQuery';\nexport default () => useMediaQuery('(min-width:600px)');",
+      errors: [err('useMediaQuery')],
+    },
+    {
+      code: "import useTheme from '@mui/material/styles/useTheme';",
+      filename: LAYOUT,
+      output: "'use client';\n\nimport useTheme from '@mui/material/styles/useTheme';",
+      errors: [err('useTheme')],
+    },
     {
       code: "import { useTheme } from '@mui/material/styles';",
       filename: LAYOUT,

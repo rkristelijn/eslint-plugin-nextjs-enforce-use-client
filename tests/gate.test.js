@@ -35,6 +35,7 @@ describe('quality gate', () => {
   it('CI runs the check on every supported Node and runs keur', () => {
     const ci = read('.github/workflows/ci.yml');
     assert.match(ci, /run: npm run check/);
+    assert.match(ci, /run: npm test/); // Node 20: runtime compatibility
     assert.match(ci, /uses: rkristelijn\/keur@/);
     // the keur gate must see files: orphan staging + a non-empty assertion
     assert.match(ci, /git checkout --orphan/);
@@ -53,10 +54,21 @@ describe('quality gate', () => {
     }
   });
 
-  it('publishes only after the gate, with provenance', () => {
+  it('publishes only after the gate, the smoke test and keur, with provenance', () => {
     const publish = read('.github/workflows/publish.yml');
-    assert.ok(publish.indexOf('npm run check') < publish.indexOf('npm publish'));
+    const at = (s) => publish.indexOf(s);
+    const steps = ['npm run check', 'npm run smoke', 'keur check', 'npm publish'];
+    // every step must exist (indexOf -1 would make the order check pass vacuously)
+    for (const step of steps) assert.ok(at(step) >= 0, step);
+    for (let i = 1; i < steps.length; i += 1)
+      assert.ok(at(steps[i - 1]) < at(steps[i]), `${steps[i - 1]} before ${steps[i]}`);
     assert.match(publish, /npm publish --provenance/);
     assert.match(publish, /id-token: write/);
+    assert.doesNotMatch(publish, /NODE_AUTH_TOKEN/); // trusted publishing, no long-lived token
+  });
+
+  it('CI runs the packed-artifact smoke test', () => {
+    assert.match(read('.github/workflows/ci.yml'), /run: npm run smoke/);
+    assert.ok(fs.existsSync(path.join(ROOT, 'scripts/smoke.sh')));
   });
 });

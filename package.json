@@ -42,7 +42,8 @@
     "coverage": "node --test --experimental-test-coverage --test-coverage-include=\"index.js\" --test-coverage-include=\"lib/**/*.js\" --test-coverage-lines=95 --test-coverage-branches=90 --test-coverage-functions=95",
     "trace": "node scripts/trace.js",
     "trace:strict": "node scripts/trace.js --strict",
-    "check": "npm run format:check && npm run lint && npm run coverage && npm run trace:strict"
+    "check": "npm run format:check && npm run lint && npm run coverage && npm run trace:strict",
+    "smoke": "bash scripts/smoke.sh"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -73,18 +73,26 @@ describe('directive prologue', () => {
 });
 
 describe('server-only exports', () => {
-  it('finds variable, function, class and specifier exports', () => {
+  it('finds variable, function, class, specifier and destructured exports', () => {
     const p = parse(
-      "export const metadata = {}, a = 1;\nexport function generateMetadata() {}\nexport class C {}\nconst r = 1;\nexport { r as revalidate, r as 'viewport' };\nexport default 1;\nexport * from 'x';\nexport const { d } = {};",
+      "export const metadata = {}, a = 1;\nexport function generateMetadata() {}\nexport class C {}\nconst r = 1;\nexport { r as dynamic, r as 'runtime' };\nexport default 1;\nexport * from 'x';\nexport const { d, e: f, ...g } = {};\nexport const [h, , [i], j = 1, ...k] = [];",
     );
     assert.deepEqual([...exportedNames(p)].sort(), [
       'C',
       'a',
+      'd',
+      'dynamic',
+      'f',
+      'g',
       'generateMetadata',
+      'h',
+      'i',
+      'j',
+      'k',
       'metadata',
-      'revalidate',
-      'viewport',
+      'runtime',
     ]);
-    assert.deepEqual(serverOnlyExports(p).sort(), ['generateMetadata', 'metadata', 'revalidate', 'viewport']);
+    // runtime works in a client file, so it is not a blocker
+    assert.deepEqual(serverOnlyExports(p).sort(), ['dynamic', 'generateMetadata', 'metadata']);
   });
 });

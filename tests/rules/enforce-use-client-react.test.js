@@ -45,7 +45,11 @@ createRuleTester().run('enforce-use-client-react', rule, {
     { code: 'export default () => <Item render={() => null} />;', filename: LAYOUT },
     // other module's member access is not React
     { code: 'import * as utils from "./utils";\nutils.useState();', filename: PAGE },
-    { code: 'import React from "react";\nReact["useState"]();\nconst x = obj.useState;', filename: PAGE },
+    { code: 'import React from "react";\nconst x = obj.useState;\nReact[key]();', filename: PAGE },
+    // a local that shadows the React import is not React (scope-aware)
+    { code: "import React from 'react';\nfunction f(React) { return React.useState(); }", filename: PAGE },
+    // module names like Object.prototype keys must not crash the lookup
+    { code: "import { value } from 'constructor';\nimport { x } from 'toString';", filename: PAGE },
     // empty file
     { code: '', filename: PAGE },
   ],
@@ -139,13 +143,34 @@ createRuleTester().run('enforce-use-client-react', rule, {
       errors: [{ messageId: 'cannotAddUseClient', data: { api: 'useState', exports: 'metadata' } }],
     },
     {
-      name: 'route segment config blocks the autofix (1.x skipped these silently)',
-      code: "import { usePathname } from 'next/navigation';\nexport const runtime = 'edge';\nexport async function generateMetadata() { return {}; }",
+      name: 'dynamic and generateStaticParams block the autofix; runtime does not (it works in a client file)',
+      code: "import { usePathname } from 'next/navigation';\nexport const runtime = 'edge';\nexport const dynamic = 'force-dynamic';\nexport function generateStaticParams() { return []; }",
       filename: PAGE,
       output: null,
       errors: [
-        { messageId: 'cannotAddUseClient', data: { api: 'usePathname', exports: "runtime', 'generateMetadata" } },
+        { messageId: 'cannotAddUseClient', data: { api: 'usePathname', exports: "dynamic', 'generateStaticParams" } },
       ],
+    },
+    {
+      name: 'runtime alone does not block the autofix',
+      code: "import { useState } from 'react';\nexport const runtime = 'edge';",
+      filename: PAGE,
+      output: fixed("import { useState } from 'react';\nexport const runtime = 'edge';"),
+      errors: [err('useState')],
+    },
+    {
+      name: 'a destructured metadata export still blocks the autofix',
+      code: 'export const { metadata } = { metadata: {} };\nexport default () => <a onClick={() => go()} />;',
+      filename: LAYOUT,
+      output: null,
+      errors: [{ messageId: 'cannotAddUseClient', data: { api: 'onClick', exports: 'metadata' } }],
+    },
+    {
+      name: "statically known computed member: React['useState']",
+      code: "import React from 'react';\nReact['useState'](0);",
+      filename: PAGE,
+      output: fixed("import React from 'react';\nReact['useState'](0);"),
+      errors: [err('React.useState')],
     },
     {
       name: 'string-literal import name',

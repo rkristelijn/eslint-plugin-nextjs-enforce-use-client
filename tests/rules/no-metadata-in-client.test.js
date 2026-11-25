@@ -5,35 +5,60 @@
 
 'use strict';
 
-const { createRuleTester } = require('../helpers/rule-tester');
+const { createRuleTester, tsx } = require('../helpers/rule-tester');
 const rule = require('../../lib/rules/no-metadata-in-client');
 
-const meta = (name) => ({ messageId: 'metadata', data: { name } });
-const seg = (name) => ({ messageId: 'segmentConfig', data: { name } });
+const PAGE = '/repo/app/dashboard/page.tsx';
+const LAYOUT = '/repo/src/app/layout.jsx';
+const build = (name, file = 'page') => ({ messageId: 'buildError', data: { name, file } });
+const ignored = (name, file = 'page') => ({ messageId: 'ignored', data: { name, file } });
 
 createRuleTester().run('no-metadata-in-client', rule, {
   valid: [
-    "export const metadata = { title: 'x' };\nexport const runtime = 'edge';",
-    "'use client';\nexport const title = 'x';\nexport default function Page() {}",
-    "'use client';\nexport { Button } from './Button';",
+    // Server Components may export all of these
+    { code: "export const metadata = { title: 'x' };\nexport const dynamic = 'force-dynamic';", filename: PAGE },
+    { code: "'use client';\nexport const title = 'x';\nexport default function Page() {}", filename: PAGE },
+    // runtime / preferredRegion / maxDuration are read statically and work in a client page
+    { code: "'use client';\nexport const runtime = 'edge';\nexport const maxDuration = 30;", filename: PAGE },
+    // not verified to be ignored, so not reported
+    { code: "'use client';\nexport const revalidate = 60;", filename: PAGE },
+    // Next.js only checks page and layout files: other client modules may export these names
+    { code: "'use client';\nexport const metadata = { owner: 'team' };", filename: '/repo/src/components/Widget.jsx' },
+    { code: "'use client';\nexport const metadata = {};", filename: '/repo/app/dashboard/Widget.tsx' },
+    // type-only exports are erased
+    { code: "'use client';\nexport type { Metadata as metadata } from 'next';", filename: PAGE, languageOptions: tsx },
+    {
+      code: "'use client';\nexport { type Metadata as generateMetadata } from 'next';",
+      filename: PAGE,
+      languageOptions: tsx,
+    },
     // not the prologue: the string after code is not a directive
-    "export const metadata = {};\n'use client';",
+    { code: "export const metadata = {};\n'use client';", filename: PAGE },
   ],
   invalid: [
-    {
-      name: 'force-dynamic in a client page is ignored (seen in a real app: the route built as static)',
-      code: "'use client';\nexport const dynamic = 'force-dynamic';\nexport default function Page() {}",
-      errors: [seg('dynamic')],
-    },
-    { code: "'use client';\nexport const metadata = { title: 'x' };", errors: [meta('metadata')] },
+    { code: "'use client';\nexport const metadata = { title: 'x' };", filename: PAGE, errors: [build('metadata')] },
     {
       code: "'use client';\nexport async function generateMetadata() { return {}; }",
-      errors: [meta('generateMetadata')],
+      filename: LAYOUT,
+      errors: [build('generateMetadata', 'layout')],
     },
     {
-      code: "'use client';\nexport const revalidate = 60, dynamic = 'force-static';\nconst viewport = {};\nexport { viewport };",
-      errors: [seg('revalidate'), seg('dynamic'), meta('viewport')],
+      name: "generateStaticParams with 'use client' is rejected by Next.js",
+      code: "'use client';\nexport function generateStaticParams() { return []; }",
+      filename: PAGE,
+      errors: [build('generateStaticParams')],
     },
-    { code: "'use client';\nconst v = {};\nexport { v as 'generateViewport' };", errors: [meta('generateViewport')] },
+    {
+      name: 'force-dynamic in a client page is ignored (the route built as static)',
+      code: "'use client';\nexport const dynamic = 'force-dynamic';\nexport default function Page() {}",
+      filename: PAGE,
+      errors: [ignored('dynamic')],
+    },
+    {
+      name: 'destructured and renamed exports',
+      code: "'use client';\nexport const { metadata } = { metadata: {} };\nconst d = 'force-dynamic';\nexport { d as dynamic };\nconst g = () => [];\nexport { g as 'generateStaticParams' };",
+      filename: PAGE,
+      errors: [build('metadata'), ignored('dynamic'), build('generateStaticParams')],
+    },
   ],
 });
