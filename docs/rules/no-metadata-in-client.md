@@ -2,7 +2,8 @@
 
 <!-- @id euc-no-metadata-in-client -->
 
-Disallow `metadata` (build error) and route segment config (silently ignored) exports in `'use client'` files.
+Disallow exports that fail the build (`metadata`, `generateMetadata`, `generateStaticParams`) or are silently ignored
+(`dynamic`) in a `'use client'` page or layout.
 
 |         |                                                                   |
 | ------- | ----------------------------------------------------------------- |
@@ -11,13 +12,20 @@ Disallow `metadata` (build error) and route segment config (silently ignored) ex
 
 ## Why
 
-Both only work in Server Components, but they fail differently:
+These exports only work in Server Components. In a `'use client'` page or layout they fail differently:
 
-- **`metadata`, `generateMetadata`, `viewport`, `generateViewport`**: the build fails ("You are attempting to export
-  metadata from a component marked with use client").
-- **Route segment config** (`dynamic`, `revalidate`, `runtime`, `fetchCache`, …): **silently ignored**. Verified on
-  Next.js 15.5.29: a `'use client'` page with `export const dynamic = 'force-dynamic'` builds as a static route (○).
-  This is the more dangerous case, because nothing tells you.
+- **`metadata`, `generateMetadata`**: the build fails ("You are attempting to export metadata from a component marked
+  with use client"). Next.js checks this in `page` and `layout` files only, so other client modules may export these
+  names.
+- **`generateStaticParams`**: the build fails ("cannot use both 'use client' and export function
+  'generateStaticParams()'").
+- **`dynamic`**: **silently ignored**. Verified on Next.js 15.5.29: a `'use client'` page with
+  `export const dynamic = 'force-dynamic'` builds as a static route (○). Nothing tells you, so this is the more
+  dangerous case.
+
+Not reported on purpose: `runtime`, `preferredRegion` and `maxDuration` are read statically and **do** work in a client
+file. `revalidate`, `fetchCache` and `dynamicParams` have not been verified, so the rule does not claim anything about
+them. Type-only exports are ignored.
 
 ## Incorrect
 

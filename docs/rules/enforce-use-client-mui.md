@@ -4,11 +4,11 @@
 
 Require `'use client'` in Server Component files that use MUI hooks or create a theme.
 
-|         |                                                                 |
-| ------- | --------------------------------------------------------------- |
-| Config  | `recommended` (error)                                           |
-| Autofix | Yes, unless the file exports `metadata` or route segment config |
-| Options | `files: 'route'` (default) or `'all'`                           |
+|         |                                                                                                  |
+| ------- | ------------------------------------------------------------------------------------------------ |
+| Config  | `recommended` (error)                                                                            |
+| Autofix | Yes, unless the file exports `metadata`, `generateMetadata`, `generateStaticParams` or `dynamic` |
+| Options | `files: 'route'` (default) or `'all'`                                                            |
 
 ## Why
 

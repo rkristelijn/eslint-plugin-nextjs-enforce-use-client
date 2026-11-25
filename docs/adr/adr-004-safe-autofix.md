@@ -4,12 +4,17 @@
 
 ## Context
 
-Adding `'use client'` is not always a fix. Some exports only work in a Server Component:
+Adding `'use client'` is not always a fix. Some exports only work in a Server Component (checked against the Next.js
+15.5.29 source and a build):
 
-- `metadata`, `generateMetadata`, `viewport`, `generateViewport`: in a `'use client'` file **the build fails**.
-- Route segment config (`dynamic`, `revalidate`, `runtime`, `fetchCache`, …): in a `'use client'` file it is **silently
-  ignored**. Verified on Next.js 15.5.29: a `'use client'` page with `export const dynamic = 'force-dynamic'` builds as
-  a static route (○). The Next.js docs do not state this; the build does.
+- `metadata`, `generateMetadata` in a `'use client'` page or layout: **the build fails** (`react_server_components.rs`
+  checks `[\\/](page|layout)` files).
+- `generateStaticParams` with `'use client'`: **the build fails** (`get-page-static-info.ts`).
+- `dynamic`: **silently ignored**. A `'use client'` page with `export const dynamic = 'force-dynamic'` builds as a
+  static route (○).
+- `runtime`, `preferredRegion`, `maxDuration` are read statically from the file and **do** work with `'use client'`.
+  They do not block the fix. `revalidate`, `fetchCache` and `dynamicParams` are not verified, so the rules do not treat
+  them either way.
 
 1.x skipped files with `export const runtime = 'edge'` silently and fixed all others, including layouts with `metadata`.
 
@@ -22,6 +27,6 @@ Adding `'use client'` is not always a fix. Some exports only work in a Server Co
 
 ## Consequences
 
-- `eslint --fix` never turns a working Server Component into a broken one, or silently drops its route segment config.
+- `eslint --fix` never turns a working Server Component into a broken one, or silently drops its `dynamic` setting.
 - A field run on a real Next.js monorepo found 27 `'use client'` pages with `dynamic = 'force-dynamic'` that has no
   effect.

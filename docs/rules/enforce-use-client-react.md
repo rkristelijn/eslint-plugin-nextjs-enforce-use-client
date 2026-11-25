@@ -5,11 +5,11 @@
 Require `'use client'` in Server Component files that use React client hooks, `next/navigation` hooks or inline event
 handlers.
 
-|         |                                                                                    |
-| ------- | ---------------------------------------------------------------------------------- |
-| Config  | `recommended` (error)                                                              |
-| Autofix | Yes, unless the file exports `metadata` or route segment config (then report only) |
-| Options | `files: 'route'` (default) or `'all'`                                              |
+|         |                                                                                                                     |
+| ------- | ------------------------------------------------------------------------------------------------------------------- |
+| Config  | `recommended` (error)                                                                                               |
+| Autofix | Yes, unless the file exports `metadata`, `generateMetadata`, `generateStaticParams` or `dynamic` (then report only) |
+| Options | `files: 'route'` (default) or `'all'`                                                                               |
 
 ## Why
 
@@ -57,9 +57,10 @@ Or keep the page a Server Component and move the interactive part into its own `
 ## Autofix
 
 The fix adds `'use client';` above the first statement (leading comments stay on top). There is **no** fix when the file
-exports `metadata`, `generateMetadata`, `viewport` or route segment config (`runtime`, `revalidate`, `dynamic`, …).
-Those exports only work in Server Components: with the directive, metadata fails the build and route segment config is
-silently ignored. The rule then names the export and asks you to move the client part out.
+exports `metadata`, `generateMetadata`, `generateStaticParams` or `dynamic`. Those only work in Server Components: with
+the directive, `metadata`, `generateMetadata` and `generateStaticParams` fail the build, and `dynamic` is silently
+ignored. The rule then names the export and asks you to move the client part out. `runtime`, `preferredRegion` and
+`maxDuration` work in client files and do not block the fix.
 
 ## Source
 

@@ -18,8 +18,9 @@ The rules now follow the React and Next.js server/client boundary rules (ADR-003
   `export const metadata`. It now reports MUI hooks and `createTheme` / `extendTheme` / `responsiveFontSizes`.
 - **`useId` is no longer reported**: it works in Server Components.
 - **The directive must be the first statement.** A `'use client'` string after an import no longer counts.
-- **No autofix when the file exports `metadata`, `generateMetadata`, `viewport` or route segment config.** 1.x skipped
-  `export const runtime = 'edge'` files silently and fixed the others. Both cases are now reported with guidance.
+- **No autofix when the file exports `metadata`, `generateMetadata`, `generateStaticParams` or `dynamic`**: with
+  `'use client'` those fail the build or are ignored. 1.x skipped `export const runtime = 'edge'` files silently
+  (`runtime` actually works in client files) and fixed the others, including layouts with `metadata`.
 - **Removed the tutorial example rule** that replaced a fixed word. It was not a Next.js check; remove it from your
   config if you enabled it.
 - Removed the unused `enforce-runtime-edge` code; it lives in `eslint-plugin-nextjs-enforce-runtime-edge`.
@@ -29,9 +30,8 @@ The rules now follow the React and Next.js server/client boundary rules (ADR-003
 
 - `configs.recommended` and plugin `meta`.
 - `require-use-client-in-error`: `error` and `global-error` must be Client Components.
-- `no-metadata-in-client`: no server-only exports in a `'use client'` file. `metadata` there fails the build; route
-  segment config (`dynamic`, `revalidate`, …) is silently ignored (a `'use client'` page with `force-dynamic` builds as
-  static).
+- `no-metadata-in-client`: in a `'use client'` page or layout, `metadata`, `generateMetadata` and `generateStaticParams`
+  fail the build, and `dynamic` is silently ignored (a `'use client'` page with `force-dynamic` builds as static).
 - `enforce-use-client-react` reports `useCallback`, `useLayoutEffect`, `useOptimistic`, `useActionState`,
   `useSyncExternalStore` and the other client hooks, `react-dom`'s `useFormStatus`, the `next/navigation` hooks,
   `React.useState`-style member calls, and inline event handlers in Server Components.
