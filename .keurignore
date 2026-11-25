@@ -1,0 +1,18 @@
+# Repo-level rule suppression (keur ADR-035), same pattern as keur and loods.
+#
+# VAULT-PERSONAL fires on the owner's GitHub handle in the repo URLs and the
+# author field. In this
+# public package that is authorship, not a leak (keur ADR-043). It is a
+# personal-vault rule from the global ~/.config/keur/rules/ layer, meant for
+# the personal notes vault. Scoping it off here is a scope correction, not a bypass.
+VAULT-PERSONAL
+
+# VAULT-WORK fires on the owner's name in package.json `author`. In a public npm
+# package that is authorship, not a leak; keur's own .keurignore scopes it off for
+# the same reason (keur ADR-043).
+VAULT-WORK
+
+# VAULT-GDPR_NL scans prose for GDPR/PII terms; here it only hits third-party
+# metadata in package-lock.json. That is a false positive on upstream data, not
+# personal data.
+VAULT-GDPR_NL

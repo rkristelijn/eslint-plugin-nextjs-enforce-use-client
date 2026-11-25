@@ -1,126 +1,74 @@
 # eslint-plugin-nextjs-enforce-use-client
 
-![CI](https://github.com/rkristelijn/eslint-plugin-nextjs-enforce-use-client/actions/workflows/test.yml/badge.svg)
+![CI](https://github.com/rkristelijn/eslint-plugin-nextjs-enforce-use-client/actions/workflows/ci.yml/badge.svg)
 [![npm version](https://img.shields.io/npm/v/eslint-plugin-nextjs-enforce-use-client)](https://www.npmjs.com/package/eslint-plugin-nextjs-enforce-use-client)
 [![npm downloads](https://img.shields.io/npm/dm/eslint-plugin-nextjs-enforce-use-client)](https://www.npmjs.com/package/eslint-plugin-nextjs-enforce-use-client)
 ![license](https://img.shields.io/badge/license-MIT-green)
 
-This ESLint plugin enforces the inclusion of `'use client';` for whenever there are things used that need it.
+ESLint rules for the Next.js App Router server/client boundary: `'use client'` where React, Next.js and MUI client APIs
+need it, and never where it breaks the build.
 
-The rule helps to:
-
-- Warn or error when the declaration is missing.
-- Automatically fix the issue (if configured to run with --fix).
+- Checks the files where the boundary is decided: `page`, `layout`, `template`, `loading`, `not-found`, `default`
+  (Server Components by default), plus `error` and `global-error` (must be Client Components).
+- Follows the React and Next.js rules: `use` and `useId` work on the server, MUI components ship their own directive,
+  and a directive only counts as the first statement.
+- Autofix only when it is safe. A file that exports `metadata` or route segment config is reported, not rewritten.
+- ESLint 9.15+ and 10, flat config, zero runtime dependencies.
 
 ## Installation
 
-Install the plugin via npm:
-
-`npm install -D eslint-plugin-nextjs-enforce-use-client`
+```sh
+npm install --save-dev eslint eslint-plugin-nextjs-enforce-use-client
+```
 
 ## Usage
 
-### Configuration for .cjs
-
-1. Import the plugin in your eslint.config.cjs file:
-
 ```js
-const enforceUseClient = require('eslint-plugin-nextjs-enforce-use-client');
-```
-
-2. Add the configuration to your ESLint rules:
-
-```js
-module.exports = [
-  // Other rules or base configurations...
-
-  // Enforce "'use client';" in files that use react stuff and need use client
-  {
-    files: ['src/app/**/*.ts', 'src/app/**/*.tsx'],
-    ignores: ['src/app/**/*.test.ts', 'src/app/**/*.test.tsx'],
-    plugins: {
-      'eslint-plugin-nextjs-enforce-use-client': enforceUseClient,
-    },
-    rules: {
-      'nextjs-enforce-use-client/enforce-use-client': 'error',
-    },
-  },
-
-  // Other rules...
-];
-```
-
-### Configuration for .mjs
-
-If you’re using an .mjs setup for your ESLint configuration:
-
-1. Import the plugin dynamically:
-
-```ts
+// eslint.config.js
 import enforceUseClient from 'eslint-plugin-nextjs-enforce-use-client';
+
+export default [{ files: ['**/*.{js,jsx,ts,tsx}'], ...enforceUseClient.configs.recommended }];
 ```
 
-2. Add the configuration to your ESLint rules:
+For `.ts` / `.tsx`, add a TypeScript parser. Spread the preset first so its JSX parser options stay:
 
-```ts
-  // .eslintrc.js or .eslintrc.cjs
-const enforceUseClient = require('eslint-plugin-nextjs-enforce-use-client');
-
- module.exports = [
-   {
-     files: ['**/*.tsx', '**/*.jsx'], // remove the backspace, it is only here to let jsDoc work
-     ignores: ['**/*.test.ts', '**/*.test.tsx'], // remove the backspace, it is only here to let jsDoc work
-     plugins: { 'eslint-plugin-nextjs-enforce-use-client': enforceUseClient },
-     rules: {
-      'eslint-plugin-nextjs-enforce-use-client/enforce-use-client-react': 'error',
-      'eslint-plugin-nextjs-enforce-use-client/enforce-use-client-mui': 'error',
-      'eslint-plugin-nextjs-enforce-use-client/enforce-use-client-react-number-format': 'error',
-      'eslint-plugin-nextjs-enforce-use-client/no-flupke': 'error',
-      },
-    },
-  ],
-```
-
-or use the mjs version:
-
-```ts
-// .eslintrc.mjs
+```js
+import tsParser from '@typescript-eslint/parser';
 import enforceUseClient from 'eslint-plugin-nextjs-enforce-use-client';
 
 export default [
   {
-    files: ['**/*.tsx', '**/*.jsx'],
-    ignores: ['**/*.test.ts', '**/*.test.tsx'],
-    plugins: { 'eslint-plugin-nextjs-enforce-use-client': enforceUseClient },
-    rules: {
-      'eslint-plugin-nextjs-enforce-use-client/enforce-use-client-react': 'error',
-      'eslint-plugin-nextjs-enforce-use-client/enforce-use-client-mui': 'error',
-      'eslint-plugin-nextjs-enforce-use-client/enforce-use-client-react-number-format': 'error',
-      'eslint-plugin-nextjs-enforce-use-client/no-flupke': 'error',
-    },
+    ...enforceUseClient.configs.recommended,
+    files: ['**/*.{js,jsx,ts,tsx}'],
+    languageOptions: { ...enforceUseClient.configs.recommended.languageOptions, parser: tsParser },
   },
 ];
 ```
 
-## Running ESLint
+Rules are prefixed with `nextjs-enforce-use-client/`. Registering the plugin under its full name, as in 1.x, works too.
 
-After configuring ESLint with the plugin, run the linter as usual:
+## Rules
 
-`npx eslint . --fix`
+🔧 = autofix · ✅ = in `recommended`
 
-## Auto-Fix Behavior
+| Rule                                                                                           | Description                                                                                      |       |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----- |
+| [enforce-use-client-react](docs/rules/enforce-use-client-react.md)                             | React / react-dom / `next/navigation` client hooks and inline event handlers need `'use client'` | ✅ 🔧 |
+| [enforce-use-client-mui](docs/rules/enforce-use-client-mui.md)                                 | MUI hooks and `createTheme` need `'use client'` (MUI components do not)                          | ✅ 🔧 |
+| [enforce-use-client-react-number-format](docs/rules/enforce-use-client-react-number-format.md) | react-number-format ships no directive                                                           | ✅ 🔧 |
+| [require-use-client-in-error](docs/rules/require-use-client-in-error.md)                       | `error` and `global-error` must be Client Components                                             | ✅ 🔧 |
+| [no-metadata-in-client](docs/rules/no-metadata-in-client.md)                                   | No `metadata` (build error) or route segment config (ignored) in a `'use client'` file           | ✅    |
 
-When used with the --fix flag, the plugin automatically adds:
+The three `enforce-*` rules take `{ files: 'route' | 'all' }`. `'route'` (default) checks only App Router entry files,
+because `'use client'` marks a boundary and files imported from a client module are client code already. `'all'` checks
+every file.
 
-`export const runtime = 'edge';`
+Upgrading from 1.x? See the [changelog](CHANGELOG.md).
 
-at the appropriate location in the file if it’s missing.
+## Contributing
 
-Rule Details
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the decisions in [docs/adr](docs/adr).
 
-- Rule name: nextjs-enforce-use-client/enforce-use-client
-- Fixable: Yes, it can automatically add the missing export.
+## License
 
-## Contribution
-
-If you’d like to contribute or report issues, feel free to open an issue or PR on the GitHub repository. Contributions are welcome! See the [dev docs](./docs/README.md)
+[MIT](LICENSE)

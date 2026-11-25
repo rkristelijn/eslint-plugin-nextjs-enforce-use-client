@@ -1,15 +1,22 @@
-.PHONY: build test lint format check
+# Thin aliases for the npm scripts; failures propagate (no `|| true`).
+# @implements ADR-005.gate
+.PHONY: install test lint format trace check
 
-build:
-	npm run build 2>/dev/null || true
+install:
+	npm ci
 
 test:
-	npm test 2>/dev/null || true
+	npm test
 
 lint:
-	npx eslint . 2>/dev/null || true
+	npm run lint
 
 format:
-	npx prettier --write . 2>/dev/null || true
+	npm run format
 
-check: format lint test
+trace:
+	npm run trace:strict
+
+check:
+	npm run check
+	keur check --tier pre-push

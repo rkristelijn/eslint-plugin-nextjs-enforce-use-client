@@ -1,0 +1,10 @@
+# keur.toml: repo-local policy (ADR-005). Rule suppressions, each with its cause, live in .keurignore.
+[project]
+type = "lib"
+
+# Level 4: the plugin is published to npm and runs in other people's CI.
+[policy]
+level = 4
+
+[rules]
+disabled = []
