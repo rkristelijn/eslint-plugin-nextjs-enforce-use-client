@@ -90,9 +90,14 @@ describe('server-only exports', () => {
       'j',
       'k',
       'metadata',
+      'r',
       'runtime',
     ]);
+    // `r` is the original name of `r as dynamic`: Next.js validates original names too
     // runtime works in a client file, so it is not a blocker
     assert.deepEqual(serverOnlyExports(p).sort(), ['dynamic', 'generateMetadata', 'metadata']);
+    // only page and layout files are validated by Next.js
+    assert.deepEqual(serverOnlyExports(p, 'app/loading.jsx'), []);
+    assert.deepEqual(serverOnlyExports(p, 'app/x/page.tsx').sort(), ['dynamic', 'generateMetadata', 'metadata']);
   });
 });

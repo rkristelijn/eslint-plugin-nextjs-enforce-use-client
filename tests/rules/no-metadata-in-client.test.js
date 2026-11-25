@@ -15,6 +15,8 @@ const ignored = (name, file = 'page') => ({ messageId: 'ignored', data: { name, 
 
 createRuleTester().run('no-metadata-in-client', rule, {
   valid: [
+    // a re-export from another module has no local binding here
+    { code: "'use client';\nexport { title as default } from './meta';", filename: PAGE },
     // Server Components may export all of these
     { code: "export const metadata = { title: 'x' };\nexport const dynamic = 'force-dynamic';", filename: PAGE },
     { code: "'use client';\nexport const title = 'x';\nexport default function Page() {}", filename: PAGE },
@@ -36,6 +38,12 @@ createRuleTester().run('no-metadata-in-client', rule, {
     { code: "export const metadata = {};\n'use client';", filename: PAGE },
   ],
   invalid: [
+    {
+      name: 'Next.js checks the original name: export { metadata as default }',
+      code: "'use client';\nconst metadata = () => null;\nexport { metadata as default };",
+      filename: PAGE,
+      errors: [build('metadata')],
+    },
     { code: "'use client';\nexport const metadata = { title: 'x' };", filename: PAGE, errors: [build('metadata')] },
     {
       code: "'use client';\nexport async function generateMetadata() { return {}; }",

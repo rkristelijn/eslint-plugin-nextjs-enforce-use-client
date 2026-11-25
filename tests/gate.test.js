@@ -67,6 +67,12 @@ describe('quality gate', () => {
     assert.doesNotMatch(publish, /NODE_AUTH_TOKEN/); // trusted publishing, no long-lived token
   });
 
+  it('CI publishes the test results as a JUnit artifact', () => {
+    const ci = read('.github/workflows/ci.yml');
+    assert.match(ci, /--test-reporter=junit/);
+    assert.match(ci, /uses: actions\/upload-artifact@[0-9a-f]{40}/);
+  });
+
   it('CI runs the packed-artifact smoke test', () => {
     assert.match(read('.github/workflows/ci.yml'), /run: npm run smoke/);
     assert.ok(fs.existsSync(path.join(ROOT, 'scripts/smoke.sh')));

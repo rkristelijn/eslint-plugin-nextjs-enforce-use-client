@@ -1,2 +1,4 @@
 node_modules
 .tmp/
+test-results.xml
+keur.log

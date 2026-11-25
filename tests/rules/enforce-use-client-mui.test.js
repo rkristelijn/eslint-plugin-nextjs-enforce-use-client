@@ -27,6 +27,21 @@ createRuleTester().run('enforce-use-client-mui', rule, {
   ],
   invalid: [
     {
+      name: 'the named spelling of a default import: { default as useMediaQuery }',
+      code: "import { default as useMediaQuery } from '@mui/material/useMediaQuery';",
+      filename: LAYOUT,
+      output: "'use client';\n\nimport { default as useMediaQuery } from '@mui/material/useMediaQuery';",
+      errors: [err('useMediaQuery')],
+    },
+    {
+      name: 'a metadata export in loading.jsx does not block the fix (Next.js only checks page and layout)',
+      code: "import { useTheme } from '@mui/material/styles';\nexport const metadata = { owner: 'team' };",
+      filename: '/repo/app/loading.jsx',
+      output:
+        "'use client';\n\nimport { useTheme } from '@mui/material/styles';\nexport const metadata = { owner: 'team' };",
+      errors: [err('useTheme')],
+    },
+    {
       name: 'default import of an MUI hook by path, called directly',
       code: "import useMediaQuery from '@mui/material/useMediaQuery';\nexport default () => useMediaQuery('(min-width:600px)');",
       filename: LAYOUT,
