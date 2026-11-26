@@ -1,40 +1,67 @@
 {
   "name": "eslint-plugin-nextjs-enforce-use-client",
-  "description": "ESLint plugin to enforce use client for nextjs projects",
-  "version": "1.2.0",
-  "scripts": {
-    "test": "npx jest"
-  },
+  "version": "2.0.0",
+  "description": "ESLint rules for Next.js App Router client/server boundaries: 'use client' where React, Next.js and MUI client APIs need it, never where it breaks the build",
   "keywords": [
     "eslint",
+    "eslintplugin",
+    "eslint-plugin",
     "nextjs",
     "next.js",
     "react",
+    "react-server-components",
     "use-client",
-    "next",
-    "enforce",
-    "autofix"
+    "app-router"
   ],
-  "main": "index.js",
-  "eslintConfig": {
-    "extends": [
-      "plugin:enforce-runtime-edge/recommended"
-    ]
-  },
-  "author": "Remi Kristelijn",
-  "license": "ISC",
+  "homepage": "https://github.com/rkristelijn/eslint-plugin-nextjs-enforce-use-client#readme",
+  "bugs": "https://github.com/rkristelijn/eslint-plugin-nextjs-enforce-use-client/issues",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/rkristelijn/eslint-plugin-nextjs-enforce-use-client.git"
   },
-  "peerDependencies": {
-    "eslint": "^9.17.0"
+  "author": "Remi Kristelijn",
+  "license": "MIT",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "lib",
+    "docs/rules",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "node --test",
+    "coverage": "node --test --experimental-test-coverage --test-coverage-include=\"index.js\" --test-coverage-include=\"lib/**/*.js\" --test-coverage-lines=95 --test-coverage-branches=90 --test-coverage-functions=95",
+    "trace": "node scripts/trace.js",
+    "trace:strict": "node scripts/trace.js --strict",
+    "check": "npm run format:check && npm run lint && npm run coverage && npm run trace:strict",
+    "smoke": "bash scripts/smoke.sh"
   },
   "devDependencies": {
-    "@typescript-eslint/rule-tester": "^8.33.1",
-    "esbuild-jest": "^0.5.0",
-    "eslint": "^9.28.0",
-    "eslint-rule-tester": "^2.0.0",
-    "jest": "^29.7.0"
+    "@eslint/js": "10.0.1",
+    "@typescript-eslint/parser": "8.74.0",
+    "eslint": "10.15.0",
+    "eslint-plugin-eslint-plugin": "7.6.2",
+    "globals": "17.14.0",
+    "prettier": "3.10.1",
+    "typescript": "6.0.3"
+  },
+  "peerDependencies": {
+    "eslint": "^9.15.0 || ^10.0.0"
+  },
+  "engines": {
+    "node": "^20.19.0 || ^22.13.0 || >=24"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

@@ -1,0 +1,73 @@
+# CI gate (ADR-005.gate): format, lint, tests with coverage, annotrace, a smoke
+# test of the packed artifact on ESLint 9 and 10, and keur on the whole tree.
+# @implements ADR-005.gate
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['20.19', '22', '24']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      # Node 20 has no --test-coverage-* threshold flags: prove runtime compatibility
+      # with the plain test suite there; the full gate (incl. coverage) runs on 22 and 24.
+      - if: matrix.node == '20.19'
+        run: npm test
+      - if: matrix.node != '20.19'
+        run: npm run check
+      # Test results as JUnit, visible per run (the gate above already decided pass/fail).
+      - if: always() && matrix.node == '24'
+        run: node --test --test-reporter=junit --test-reporter-destination=test-results.xml
+      - if: always() && matrix.node == '24'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: test-results
+          path: test-results.xml
+          if-no-files-found: error
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+      - run: npm run smoke
+
+  keur:
+    # libre2-10 (RE2 .so.10, which keur v0.2.0 links against) ships in Ubuntu 24.04;
+    # ubuntu-latest is 26.04. Back to ubuntu-latest once keur ships static RE2.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install RE2 runtime for keur v0.2.0
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libre2-10
+      - uses: rkristelijn/keur@ade05b4d9537b538acefb966ba83b86a1f206891 # v0.2.0
+        with:
+          version: v0.2.0
+          args: version
+      # Stage the tree on an unborn branch so every file is new to keur check;
+      # fail if keur scanned nothing.
+      - name: keur gate on the whole tree
+        run: |
+          set -euo pipefail
+          git checkout --orphan keur-full-tree
+          git add -A
+          keur check --tier pre-push 2>&1 | tee keur.log
+          grep -qE 'scanning [1-9][0-9]* staged file' keur.log

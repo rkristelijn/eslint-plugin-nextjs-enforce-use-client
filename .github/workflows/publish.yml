@@ -1,0 +1,43 @@
+# Publish to npm with provenance (trusted publishing) when a GitHub release is
+# published. The same gate as CI runs on the exact release commit first, keur
+# included: a red gate never ships.
+# @implements ADR-005.gate
+name: publish
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04 # keur v0.2.0 needs libre2-10 (see ci.yml)
+    permissions:
+      contents: read
+      id-token: write # npm provenance / trusted publishing
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
+      - run: npm ci
+      - run: npm run check
+      - run: npm run smoke
+      - name: Install RE2 runtime for keur v0.2.0
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq libre2-10
+      - uses: rkristelijn/keur@ade05b4d9537b538acefb966ba83b86a1f206891 # v0.2.0
+        with:
+          version: v0.2.0
+          args: version
+      - name: keur gate on the release commit
+        run: |
+          set -euo pipefail
+          git checkout --orphan keur-release
+          git add -A
+          keur check --tier pre-push 2>&1 | tee keur.log
+          grep -qE 'scanning [1-9][0-9]* staged file' keur.log
+          git checkout -q -f "$GITHUB_SHA"
+      - run: npm publish --provenance --access public
